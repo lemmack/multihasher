@@ -1,3 +1,3 @@
 # multihasher
 
-A simple server which receives files and returns their hash.
+A simple http server which receives a file and returns multiple types of hashes for the file. Currently supports fnv and md5.
