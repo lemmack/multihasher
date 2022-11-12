@@ -40,7 +40,7 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		fileBytes, err := ioutil.ReadAll(file)
+		fileBytes, err := ioutil.ReadAll(file) // Reads all the contents of the file into a byte slice
 
 		if err != nil {
 			fmt.Fprintf(w, "error forming byteslice from file: %s", err)
@@ -48,7 +48,7 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		j, err := make_hash_json(fileBytes)
+		j, err := make_hash_json(fileBytes) // Create a json struct (as a byte slice) containing the hashes of the file
 
 		if err != nil {
 			fmt.Fprintf(w, "error making hash json: %s", err)
@@ -57,13 +57,13 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Println("json: ", string(j))
-		fmt.Fprintf(w, "%s", j) // Write the hash as a json string to the response
+		fmt.Fprintf(w, "%s", j) // Write the json as a string to the response
 	default:
 		fmt.Fprintf(w, "Sorry, only POST method supported")
 	}
 }
 
-// Takes an io.Reader (such as a multipart.File), generates its FNV hash, and returns the hash in json format
+// Takes a byte slice b and returns a json struct (as a byte slice) containing multiple hashes of b
 func make_hash_json(b []byte) ([]byte, error) {
 	rawFnv, err := hash.BytesToFNV(b)
 
@@ -83,6 +83,7 @@ func make_hash_json(b []byte) ([]byte, error) {
 	return j, nil
 }
 
+// Sets up the routes and starts the server
 func Start() {
 	http.HandleFunc("/", index_handler)
 	http.HandleFunc("/upload", upload_handler)

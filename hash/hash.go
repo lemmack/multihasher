@@ -6,9 +6,8 @@ import (
 	"hash/fnv"
 )
 
-// Takes any io.Reader (such as a multipart.File), reads its data and converts the data to an FNV-1 sum in string format.
+// Takes a byte slice and converts it to an FNV-1 sum as a string.
 func BytesToFNV(b []byte) (s string, err error) {
-
 	h := fnv.New64()
 	_, err = h.Write(b)
 
@@ -20,7 +19,7 @@ func BytesToFNV(b []byte) (s string, err error) {
 	return s, nil
 }
 
-// Takes any io.Reader (such as a multipart.File), reads its data and converts the data to an md5 sum in string format.
+// Takes a byte slice and converts it to an md5 sum as a string.
 func BytesToMd5(b []byte) string {
 	sum := md5.Sum(b)
 	m := fmt.Sprintf("%x", sum)
