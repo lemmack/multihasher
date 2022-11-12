@@ -10,8 +10,8 @@ import (
 	"github.com/lemmack/multihasher/hash"
 )
 
-const portString string = ":8000"                  // Port the server will run on
-const localClient string = "http://127.0.0.1:5500" // Address of a local client for local testing
+var portString string
+var localClient string
 
 type jsonHash struct {
 	Fnv string `json:"fnv"`
@@ -25,7 +25,9 @@ func index_handler(w http.ResponseWriter, r *http.Request) {
 
 // Handles the "/upload" route
 func upload_handler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", localClient) // Allow CORS for a local client
+	if localClient != "" {
+		w.Header().Set("Access-Control-Allow-Origin", localClient) // Allow CORS for a local client
+	}
 
 	switch r.Method {
 	case "POST":
@@ -84,7 +86,9 @@ func make_hash_json(b []byte) ([]byte, error) {
 }
 
 // Sets up the routes and starts the server
-func Start() {
+func Start(ps string, lc string) {
+	portString, localClient = ps, lc
+
 	http.HandleFunc("/", index_handler)
 	http.HandleFunc("/upload", upload_handler)
 
