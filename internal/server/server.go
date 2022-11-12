@@ -10,19 +10,21 @@ import (
 	"github.com/lemmack/multihasher/hash"
 )
 
-const localClient string = "http://127.0.0.1:5500"
-const portString string = ":8000"
+const portString string = ":8000"                  // Port the server will run on
+const localClient string = "http://127.0.0.1:5500" // Address of a local client for local testing
 
 type jsonHash struct {
 	Hash string `json:"hash"`
 }
 
+// Handles the "/" (index) route
 func index_handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Index route response.")
 }
 
+// Handles the "/upload" route
 func upload_handler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", localClient)
+	w.Header().Set("Access-Control-Allow-Origin", localClient) // Allow CORS for a local client
 
 	switch r.Method {
 	case "POST":
@@ -37,7 +39,7 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		j, err := make_hash(file)
+		j, err := make_hash_json(file)
 
 		if err != nil {
 			fmt.Fprintf(w, "error: %s", err)
@@ -46,18 +48,16 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Println("json: ", string(j))
-
-		fmt.Fprintf(w, "%s", j)
+		fmt.Fprintf(w, "%s", j) // Write the hash as a json string to the response
 	default:
 		fmt.Fprintf(w, "Sorry, only POST method supported")
 	}
 }
 
-func make_hash(f io.Reader) ([]byte, error) {
+// Takes an io.Reader (such as a multipart.File), generates its FNV hash, and returns the hash in json format
+func make_hash_json(f io.Reader) ([]byte, error) {
 	rawHash := hash.ReaderToFNV(f)
-
 	jh := jsonHash{Hash: rawHash}
-
 	j, err := json.Marshal(jh)
 
 	if err != nil {
