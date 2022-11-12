@@ -3,7 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 
@@ -14,7 +14,8 @@ const portString string = ":8000"                  // Port the server will run o
 const localClient string = "http://127.0.0.1:5500" // Address of a local client for local testing
 
 type jsonHash struct {
-	Hash string `json:"hash"`
+	Fnv string `json:"fnv"`
+	Md5 string `json:"md5"`
 }
 
 // Handles the "/" (index) route
@@ -33,17 +34,25 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 		file, _, err := r.FormFile("file") // Retrieve the file from form data
 
 		if err != nil {
-			fmt.Fprintf(w, "error: %s", err)
-			log.Println("error:", err)
+			fmt.Fprintf(w, "error forming file: %s", err)
+			log.Println("error forming file:", err)
 			return
 		}
 		defer file.Close()
 
-		j, err := make_hash_json(file)
+		fileBytes, err := ioutil.ReadAll(file)
 
 		if err != nil {
-			fmt.Fprintf(w, "error: %s", err)
-			log.Println("error:", err)
+			fmt.Fprintf(w, "error forming byteslice from file: %s", err)
+			log.Println("error forming byteslice from file:", err)
+			return
+		}
+
+		j, err := make_hash_json(fileBytes)
+
+		if err != nil {
+			fmt.Fprintf(w, "error making hash json: %s", err)
+			log.Println("error making hash json:", err)
 			return
 		}
 
@@ -55,9 +64,16 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 }
 
 // Takes an io.Reader (such as a multipart.File), generates its FNV hash, and returns the hash in json format
-func make_hash_json(f io.Reader) ([]byte, error) {
-	rawHash := hash.ReaderToFNV(f)
-	jh := jsonHash{Hash: rawHash}
+func make_hash_json(b []byte) ([]byte, error) {
+	rawFnv, err := hash.BytesToFNV(b)
+
+	if err != nil {
+		return nil, err
+	}
+
+	rawMd5 := hash.BytesToMd5(b)
+
+	jh := jsonHash{Fnv: rawFnv, Md5: rawMd5}
 	j, err := json.Marshal(jh)
 
 	if err != nil {

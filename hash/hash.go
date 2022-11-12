@@ -1,15 +1,29 @@
 package hash
 
 import (
+	"crypto/md5"
 	"fmt"
 	"hash/fnv"
-	"io"
 )
 
 // Takes any io.Reader (such as a multipart.File), reads its data and converts the data to an FNV-1 sum in string format.
-func ReaderToFNV(f io.Reader) (s string) {
+func BytesToFNV(b []byte) (s string, err error) {
+
 	h := fnv.New64()
-	io.Copy(h, f)
+	_, err = h.Write(b)
+
+	if err != nil {
+		return "", err
+	}
+
 	s = fmt.Sprintf("%v", h.Sum64())
-	return s
+	return s, nil
+}
+
+// Takes any io.Reader (such as a multipart.File), reads its data and converts the data to an md5 sum in string format.
+func BytesToMd5(b []byte) string {
+	sum := md5.Sum(b)
+	m := fmt.Sprintf("%x", sum)
+
+	return m
 }
