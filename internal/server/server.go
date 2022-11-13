@@ -13,7 +13,7 @@ import (
 var portString string
 var localClient string
 
-type jsonHash struct {
+type Hashes struct {
 	Fnv string `json:"fnv"`
 	Md5 string `json:"md5"`
 }
@@ -25,15 +25,16 @@ func index_handler(w http.ResponseWriter, r *http.Request) {
 
 // Handles the "/upload" route
 func upload_handler(w http.ResponseWriter, r *http.Request) {
+
 	if localClient != "" {
 		w.Header().Set("Access-Control-Allow-Origin", localClient) // Allow CORS for a local client
 	}
 
 	switch r.Method {
 	case "POST":
-		r.ParseMultipartForm(32 << 20) // Parses a request body as multipart/form-data
+		r.ParseMultipartForm(32 << 20) // Parses the request body as multipart/form-data
 
-		file, _, err := r.FormFile("file") // Retrieve the file from form data
+		file, _, err := r.FormFile("file") // Retrieve the file from the form data
 
 		if err != nil {
 			fmt.Fprintf(w, "error forming file: %s", err)
@@ -50,7 +51,7 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		j, err := make_hash_json(fileBytes) // Create a json struct (as a byte slice) containing the hashes of the file
+		j, err := make_hash_json(fileBytes) // Create a json object (as a byte slice) containing the hashes of the file
 
 		if err != nil {
 			fmt.Fprintf(w, "error making hash json: %s", err)
@@ -65,17 +66,18 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Takes a byte slice b and returns a json struct (as a byte slice) containing multiple hashes of b
+// Takes a byte slice b and returns a json object (as a byte slice) containing multiple hashes of the data in b
 func make_hash_json(b []byte) ([]byte, error) {
-	rawFnv, err := hash.BytesToFNV(b)
+	rawFnv, err := hash.BytesToFNV(b) // Generate FNV hash
 
 	if err != nil {
 		return nil, err
 	}
 
-	rawMd5 := hash.BytesToMd5(b)
+	rawMd5 := hash.BytesToMd5(b) // Generate md5 hash
 
-	jh := jsonHash{Fnv: rawFnv, Md5: rawMd5}
+	// Form the json object containing the generated hashes
+	jh := Hashes{Fnv: rawFnv, Md5: rawMd5}
 	j, err := json.Marshal(jh)
 
 	if err != nil {
