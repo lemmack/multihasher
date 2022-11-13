@@ -14,8 +14,9 @@ var portString string
 var localClient string
 
 type Hashes struct {
-	Fnv string `json:"fnv"`
-	Md5 string `json:"md5"`
+	Fnv    string `json:"fnv"`
+	Md5    string `json:"md5"`
+	Ripemd string `json:"ripemd160"`
 }
 
 // Handles the "/" (index) route
@@ -74,10 +75,16 @@ func make_hash_json(b []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	rawMd5 := hash.BytesToMd5(b) // Generate md5 hash
+	rawMd5 := hash.BytesToMD5(b) // Generate md5 hash
+
+	rawRipemd, err := hash.BytesToRIPEMD(b) // Generate RIPEMD-160 hash
+
+	if err != nil {
+		return nil, err
+	}
 
 	// Form the json object containing the generated hashes
-	jh := Hashes{Fnv: rawFnv, Md5: rawMd5}
+	jh := Hashes{Fnv: rawFnv, Md5: rawMd5, Ripemd: rawRipemd}
 	j, err := json.Marshal(jh)
 
 	if err != nil {
