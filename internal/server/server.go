@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,12 +11,6 @@ import (
 
 var portString string
 var localClient string
-
-type Hashes struct {
-	Fnv    string `json:"fnv"`
-	Md5    string `json:"md5"`
-	Ripemd string `json:"ripemd160"`
-}
 
 // Handles the "/" (index) route
 func index_handler(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +45,7 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		j, err := make_hash_json(fileBytes)
+		j, err := hash.MakeHashJson(fileBytes)
 
 		if err != nil {
 			fmt.Fprintf(w, "error making hash json: %s", err)
@@ -60,36 +53,10 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Println("json: ", string(j))
 		fmt.Fprintf(w, "%s", j) // Write the json as a string to the response
 	default:
 		fmt.Fprintf(w, "Sorry, only POST method supported")
 	}
-}
-
-// Takes a byte slice b and returns a json object (as a byte slice) containing multiple hashes of the data in b
-func make_hash_json(b []byte) ([]byte, error) {
-	rawFnv, err := hash.BytesToFNV(b)
-
-	if err != nil {
-		return nil, err
-	}
-
-	rawMd5 := hash.BytesToMD5(b)
-	rawRipemd, err := hash.BytesToRIPEMD(b)
-
-	if err != nil {
-		return nil, err
-	}
-
-	hashStruct := Hashes{Fnv: rawFnv, Md5: rawMd5, Ripemd: rawRipemd}
-	jsonBytes, err := json.Marshal(hashStruct)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return jsonBytes, nil
 }
 
 // Sets up the routes and starts the server

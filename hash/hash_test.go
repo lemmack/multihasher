@@ -1,13 +1,13 @@
-package server
+package hash
 
 import (
 	"testing"
 )
 
-func BenchmarkServer(b *testing.B) {
+func BenchmarkMakeHashJson(b *testing.B) {
 	bytes := []byte("this is a test string")
 
 	for i := 0; i < b.N; i++ {
-		_, _ = make_hash_json(bytes)
+		_, _ = MakeHashJson(bytes)
 	}
 }
