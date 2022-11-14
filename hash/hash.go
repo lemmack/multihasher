@@ -9,28 +9,28 @@ import (
 	"golang.org/x/crypto/ripemd160"
 )
 
-type Hashes struct {
-	Fnv    string `json:"fnv"`
-	Md5    string `json:"md5"`
-	Ripemd string `json:"ripemd160"`
+type hashes struct {
+	FNV    string `json:"fnv"`
+	MD5    string `json:"md5"`
+	RIPEMD string `json:"ripemd160"`
 }
 
 // Takes a byte slice b and returns a json object (as a byte slice) containing multiple hashes of the data in b
 func MakeHashJson(b []byte) ([]byte, error) {
-	rawFnv, err := bytesToFNV(b)
+	rawFNV, err := bytesToFNV(b)
 
 	if err != nil {
 		return nil, err
 	}
 
-	rawMd5 := bytesToMD5(b)
-	rawRipemd, err := bytesToRIPEMD(b)
+	rawMD5 := bytesToMD5(b)
+	rawRIPEMD, err := bytesToRIPEMD(b)
 
 	if err != nil {
 		return nil, err
 	}
 
-	hashStruct := Hashes{Fnv: rawFnv, Md5: rawMd5, Ripemd: rawRipemd}
+	hashStruct := hashes{FNV: rawFNV, MD5: rawMD5, RIPEMD: rawRIPEMD}
 	jsonBytes, err := json.Marshal(hashStruct)
 
 	if err != nil {
