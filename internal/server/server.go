@@ -27,15 +27,15 @@ func index_handler(w http.ResponseWriter, r *http.Request) {
 // Handles the "/upload" route
 func upload_handler(w http.ResponseWriter, r *http.Request) {
 
+	// Allow CORS for a local client if one is specified
 	if localClient != "" {
-		w.Header().Set("Access-Control-Allow-Origin", localClient) // Allow CORS for a local client
+		w.Header().Set("Access-Control-Allow-Origin", localClient)
 	}
 
 	switch r.Method {
 	case "POST":
-		r.ParseMultipartForm(32 << 20) // Parses the request body as multipart/form-data
-
-		file, _, err := r.FormFile("file") // Retrieve the file from the form data
+		r.ParseMultipartForm(32 << 20)
+		file, _, err := r.FormFile("file")
 
 		if err != nil {
 			fmt.Fprintf(w, "error forming file: %s", err)
@@ -44,7 +44,7 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		fileBytes, err := ioutil.ReadAll(file) // Reads all the contents of the file into a byte slice
+		fileBytes, err := ioutil.ReadAll(file)
 
 		if err != nil {
 			fmt.Fprintf(w, "error forming byteslice from file: %s", err)
@@ -52,7 +52,7 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		j, err := make_hash_json(fileBytes) // Create a json object (as a byte slice) containing the hashes of the file
+		j, err := make_hash_json(fileBytes)
 
 		if err != nil {
 			fmt.Fprintf(w, "error making hash json: %s", err)
@@ -69,29 +69,27 @@ func upload_handler(w http.ResponseWriter, r *http.Request) {
 
 // Takes a byte slice b and returns a json object (as a byte slice) containing multiple hashes of the data in b
 func make_hash_json(b []byte) ([]byte, error) {
-	rawFnv, err := hash.BytesToFNV(b) // Generate FNV hash
+	rawFnv, err := hash.BytesToFNV(b)
 
 	if err != nil {
 		return nil, err
 	}
 
-	rawMd5 := hash.BytesToMD5(b) // Generate md5 hash
-
-	rawRipemd, err := hash.BytesToRIPEMD(b) // Generate RIPEMD-160 hash
-
-	if err != nil {
-		return nil, err
-	}
-
-	// Form the json object containing the generated hashes
-	jh := Hashes{Fnv: rawFnv, Md5: rawMd5, Ripemd: rawRipemd}
-	j, err := json.Marshal(jh)
+	rawMd5 := hash.BytesToMD5(b)
+	rawRipemd, err := hash.BytesToRIPEMD(b)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return j, nil
+	hashStruct := Hashes{Fnv: rawFnv, Md5: rawMd5, Ripemd: rawRipemd}
+	jsonBytes, err := json.Marshal(hashStruct)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return jsonBytes, nil
 }
 
 // Sets up the routes and starts the server

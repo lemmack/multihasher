@@ -8,9 +8,8 @@ import (
 // var version string
 
 const portString string = ":8000"                  // Port the server will run on
-const localClient string = "http://127.0.0.1:5500" // Address of a local client to enable CORS, set to empty string to disable
+const localClient string = "http://127.0.0.1:5500" // Address of a local client if one is used, set to empty string to disable
 
-// Starts the server
 func main() {
 	server.Start(portString, localClient)
 }
